@@ -140,7 +140,9 @@ std::int32_t GRFILEPOS(
 
 	offset = c * 3;
 
-	value = *(std::int32_t*)(((std::uint8_t*)grstarts.data()) + offset);
+	// three little-endian bytes, on any CPU
+	const auto bytes = reinterpret_cast<const std::uint8_t*>(grstarts.data()) + offset;
+	value = bytes[0] | (bytes[1] << 8) | (bytes[2] << 16);
 
 	value &= 0x00ffffffl;
 
@@ -198,6 +200,7 @@ void CAL_GetGrChunkLength(
 {
 	grhandle.set_position(GRFILEPOS(chunk));
 	grhandle.read(&chunkexplen, sizeof(chunkexplen));
+	chunkexplen = bstone::endian::to_little(chunkexplen);
 
 	chunkcomplen = GRFILEPOS(chunk + 1) - GRFILEPOS(chunk) - 4;
 }
@@ -581,6 +584,21 @@ void CAL_ExpandGrChunk(
 	CAL_HuffExpand(source, grsegs[chunk].data(), expanded, grhuffman);
 
 	grsegs_sizes_[chunk] = expanded;
+
+#if BSTONE_ENDIAN == BSTONE_BIG_ENDIAN
+	// A font's height and character offsets are little-endian words; the
+	// drawing code reads them as fontstruct.
+	if (chunk >= STARTFONT && chunk < STARTFONT + NUMFONT &&
+		expanded >= static_cast<std::int32_t>(2 + 2 * 256))
+	{
+		auto words = reinterpret_cast<std::uint16_t*>(grsegs[chunk].data());
+
+		for (auto i = 0; i < 1 + 256; ++i)
+		{
+			words[i] = bstone::endian::to_little(words[i]);
+		}
+	}
+#endif
 }
 
 /*

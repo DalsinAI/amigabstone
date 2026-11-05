@@ -35,6 +35,7 @@ SPDX-License-Identifier: GPL-2.0-or-later
 #include "bstone_logger.h"
 #include "bstone_version.h"
 #include "bstone_content_path.h"
+#include "bstone_endian.h"
 #include "bstone_fs_utils.h"
 #include "bstone_sys_message_box.h"
 
@@ -882,6 +883,13 @@ void CAL_SetupGrFile()
 	ca_open_resource(AssetsResourceType::vgadict, handle);
 	handle.read(&grhuffman, sizeof(grhuffman));
 
+	// the dictionary's nodes are little-endian words
+	for (auto& node : grhuffman)
+	{
+		node.bit0 = bstone::endian::to_little(node.bit0);
+		node.bit1 = bstone::endian::to_little(node.bit1);
+	}
+
 	//
 	// load the data offsets from ???head.ext
 	//
@@ -913,6 +921,13 @@ void CAL_SetupGrFile()
 		reinterpret_cast<std::uint8_t*>(pictable.data()),
 		NUMPICS * sizeof(pictabletype),
 		grhuffman);
+
+	// each picture's width and height are little-endian words
+	for (auto& pic : pictable)
+	{
+		pic.width = bstone::endian::to_little(pic.width);
+		pic.height = bstone::endian::to_little(pic.height);
+	}
 }
 
 static void cal_setup_map_data_file()
@@ -967,6 +982,14 @@ void CAL_SetupMapFile()
 	handle.read(&header.RLEWtag, sizeof(header.RLEWtag));
 	handle.read(&header.headeroffsets, sizeof(header.headeroffsets));
 
+	// MAPHEAD's tag and offsets are little-endian
+	header.RLEWtag = bstone::endian::to_little(header.RLEWtag);
+
+	for (auto& offset : header.headeroffsets)
+	{
+		offset = bstone::endian::to_little(offset);
+	}
+
 	rlew_tag = header.RLEWtag;
 
 	//
@@ -1009,6 +1032,20 @@ void CAL_SetupMapFile()
 		maphandle.read(
 			&map_header->name,
 			sizeof(map_header->name));
+
+		// a map's header numbers are little-endian
+		for (auto& start : map_header->planestart)
+		{
+			start = bstone::endian::to_little(start);
+		}
+
+		for (auto& length : map_header->planelength)
+		{
+			length = bstone::endian::to_little(length);
+		}
+
+		map_header->width = bstone::endian::to_little(map_header->width);
+		map_header->height = bstone::endian::to_little(map_header->height);
 	}
 
 	//
