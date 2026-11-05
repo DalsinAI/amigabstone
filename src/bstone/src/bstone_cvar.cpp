@@ -320,6 +320,25 @@ void CVar::set_int32_from_string()
 try
 {
 	const auto string = string_value_.get();
+#ifdef __amigaos__
+	// Every string CVar comes here while the static objects are made, with
+	// words like "software" that are no numbers: from_chars() throws and
+	// the catch below takes the default. GCC 16 on libnix cannot unwind a
+	// throw before main() (the program aborts), so a string that cannot be
+	// a number is caught here, without the throw.
+	{
+		auto iter = string.cbegin();
+		if (iter != string.cend() && (*iter == '-' || *iter == '+'))
+		{
+			++iter;
+		}
+		if (iter == string.cend() || *iter < '0' || *iter > '9')
+		{
+			int32_value_ = int32_default_value_;
+			return;
+		}
+	}
+#endif
 	from_chars(string.cbegin(), string.cend(), int32_value_, 0);
 }
 catch (...)
