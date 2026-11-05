@@ -152,7 +152,12 @@ try {
 	switch (pixel_format)
 	{
 		case PixelFormat::b8g8r8a8: return
-#if SDL_VERSION_ATLEAST(2, 0, 5)
+#if BSTONE_ENDIAN == BSTONE_BIG_ENDIAN
+			// The software renderer packs 0xAARRGGBB words (SwVideo's
+			// palette): that is ARGB8888 on any CPU, while BGRA32 is
+			// BGRA8888 on a big-endian one (blue where red should be).
+			SDL_PIXELFORMAT_ARGB8888
+#elif SDL_VERSION_ATLEAST(2, 0, 5)
 			SDL_PIXELFORMAT_BGRA32
 #else
 	#if BSTONE_ENDIAN == BSTONE_LITTLE_ENDIAN
