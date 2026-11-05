@@ -10788,11 +10788,11 @@ const std::string& get_profile_dir()
 
 #ifdef __amigaos__
 		// Settings, saved games, the log and screenshots in the drawer's
-		// Profile drawer (made if it is not there).
+		// User drawer (made if it is not there).
 		if (profile_dir.empty())
 		{
-			profile_dir = "PROGDIR:Profile";
-			mkdir("PROGDIR:Profile", 0755);
+			profile_dir = "PROGDIR:User";
+			mkdir("PROGDIR:User", 0755);
 		}
 #endif
 
