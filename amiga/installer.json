@@ -1,0 +1,14 @@
+{
+  "name": "Blake Stone (BStone)",
+  "version": "1.3.4-amigaos3",
+  "drawer": "BStone",
+  "program": "BStone",
+  "cpu": "68040",
+  "fpu": true,
+  "space": 6000000,
+  "modules": ["SDL2.module"],
+  "keep": ["User"],
+  "parent": "Work:Games",
+  "badge": "icons/art/bstone.png",
+  "script": "Install-BStone"
+}

@@ -76,7 +76,7 @@ $(BUILD)/obj/%.c.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 dist: all AMIGA_PORT.md LICENSE.txt README.md amiga/Licences.txt
-	rm -rf $(OUT) && mkdir -p $(OUT)
+	rm -rf $(OUT) && mkdir -p $(OUT)/User
 	cp $(BUILD)/BStone $(OUT)/
 	cp AMIGA_PORT.md $(OUT)/ReadMe
 	cp README.md $(OUT)/ReadMe-bstone
