@@ -84,7 +84,12 @@ auto vid_renderer_cvar = bstone::CVar{
 	bstone::CVarStringTag{},
 	vid_renderer_cvar_name,
 	bstone::CVarFlags::archive,
+#ifdef __amigaos__
+	// The 68040 draws (OpenGPU's GL is not BStone's GL 2.0/3.2 or Vulkan).
+	vid_renderer_cvar_software,
+#else
 	vid_renderer_cvar_auto_detect,
+#endif
 	bstone::make_span(vid_renderer_cvar_values)};
 
 // vid_is_positioned
@@ -1351,7 +1356,13 @@ void VL_Startup()
 try {
 	g_video = nullptr;
 
+#ifdef __amigaos__
+	// Always the software renderer, whatever the config says: the GL and
+	// Vulkan renderers are built but not for OpenGPU (see AMIGA_PORT.md).
+	const auto is_sw = true;
+#else
 	const auto is_sw = (vid_cfg_get_renderer_type() == bstone::RendererType::software);
+#endif
 
 	auto is_try_sw = false;
 
