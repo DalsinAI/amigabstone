@@ -1,0 +1,14 @@
+root = true
+
+[{CMakeLists.txt,*.cmake}]
+indent_size = 4
+indent_style = tab
+
+[*.{c,h,cpp}]
+insert_final_newline = true
+indent_size = 4
+indent_style = tab
+
+[*.manifest]
+indent_size = 4
+indent_style = tab
