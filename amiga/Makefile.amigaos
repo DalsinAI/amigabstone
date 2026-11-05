@@ -1,0 +1,96 @@
+# BStone (Blake Stone: Aliens of Gold and Planet Strike) for AmigaOS 3.x,
+# 68040/68060 + FPU, on OpenGPU's SDL 2.
+#
+#   make -f amiga/Makefile.amigaos -j4 dist STOVE=/path/to/os32-gcc16-open6
+#
+# STOVE is a GFOpenAmigaGCC 16.2.0-open6 stove: the compiler in
+# $(STOVE)/prefix/bin and the GFOpenGPU SDK 0.8 (libSDL2.a and its headers)
+# in $(STOVE)/prefix/m68k-amigaos. The game's own software renderer draws;
+# the sound is BStone's own SDL audio mixer (no OpenAL). The data is read
+# from PROGDIR:.
+#
+# Output: build/amigaos/BStone; 'dist' makes dist/BStone/ (the program,
+# ReadMe, the licences, with GlowIcons), dist/BStone.info and
+# dist/Install-BStone. No game data is in it: the player adds their own.
+
+STOVE   ?= $(HOME)/AmiCradle/stoves/os32-gcc16-open6
+PREFIX  ?= $(STOVE)/prefix
+SDL2KIT ?= $(PREFIX)/m68k-amigaos
+CC      = $(PREFIX)/bin/m68k-amigaos-gcc
+CXX     = $(PREFIX)/bin/m68k-amigaos-g++
+CPU     ?= -m68040 -m68881
+# -fno-tree-loop-distribute-patterns: GCC 16's loop miscompile (the kit's
+# sdl2-config gives it too).
+OPT     ?= -O2 -fomit-frame-pointer -fno-tree-loop-distribute-patterns
+
+VERSION = 1.3.4
+S       = src/bstone/src
+L       = src/lib
+BUILD   = build/amigaos
+GEN     = $(BUILD)/gen
+DIST    = dist
+OUT     = $(DIST)/BStone
+
+DEFS    = -D__amigaos__ -DBSTONE_NO_ASSERT
+INC     = -I$(GEN) -I$(S) -I$(S)/dosbox -I$(L)/khronos/include \
+          -I$(L)/nuked_opl3/include -I$(L)/openal_soft/include -I$(L)/openal_soft/include/AL \
+          -I$(L)/stb/include -I$(L)/xbrz/include -I$(L)/vulkan/include \
+          -Iamiga -I$(SDL2KIT)/include/SDL2
+CXXFLAGS = -noixemul $(OPT) $(CPU) -std=gnu++14 $(DEFS) $(INC) -w
+CFLAGS  = -noixemul $(OPT) $(CPU) -std=gnu99 $(DEFS) $(INC) -w
+LDFLAGS = -noixemul $(CPU)
+# libSDL2.a's GL half needs libGL.a's gla_* calls; libGL.a's gl* calls meet
+# BStone's own gl* function pointers of the same names, so a copy of it with
+# every symbol weak is linked (BStone's win; its GL renderer is not used).
+OBJCOPY = $(PREFIX)/bin/m68k-amigaos-objcopy
+GLWEAK  = $(BUILD)/libGL-weak.a
+LIBS    = -L$(SDL2KIT)/lib -lSDL2 $(GLWEAK) -lpthread -latomic -lm
+
+# Upstream's src/bstone/CMakeLists.txt list, and the libraries it links.
+SRC     = $(shell grep -oE 'src/[A-Za-z0-9_/]+\.cpp' src/bstone/CMakeLists.txt | sort -u | sed 's|^src/|$(S)/|') \
+          $(L)/nuked_opl3/src/opl3.cpp $(L)/xbrz/src/xbrz.cpp $(L)/vulkan/src/bstone_vulkan.cpp
+ASRC    = $(wildcard amiga/*.c amiga/*.cpp)
+OBJS    = $(patsubst %,$(BUILD)/obj/%.o,$(SRC) $(ASRC))
+
+all: $(BUILD)/BStone
+
+$(GEN)/bstone_version_.h: $(S)/bstone_version_.h.in
+	@mkdir -p $(GEN)
+	sed -e 's/$${PROJECT_VERSION_MAJOR}/1/; s/$${PROJECT_VERSION_MINOR}/3/; s/$${PROJECT_VERSION_PATCH}/4/' \
+	    -e 's/$${BSTONE_VERSION_PRE_RELEASE}//; s/$${BSTONE_GIT_HASH}//' \
+	    -e 's/$${BSTONE_VERSION}/$(VERSION)/; s/$${BSTONE_VERSION_SHORT}/$(VERSION)/' $< > $@
+
+$(GLWEAK): $(SDL2KIT)/lib/libGL.a
+	@mkdir -p $(dir $@)
+	$(OBJCOPY) --weaken $< $@
+
+$(BUILD)/BStone: $(OBJS) $(GLWEAK)
+	$(CXX) $(LDFLAGS) -Wl,-Map,$@.map -o $@ $(OBJS) $(LIBS)
+
+$(BUILD)/obj/%.cpp.o: %.cpp $(GEN)/bstone_version_.h
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+$(BUILD)/obj/%.c.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+dist: all AMIGA_PORT.md LICENSE.txt README.md amiga/Licences.txt
+	rm -rf $(OUT) && mkdir -p $(OUT)
+	cp $(BUILD)/BStone $(OUT)/
+	cp AMIGA_PORT.md $(OUT)/ReadMe
+	cp README.md $(OUT)/ReadMe-bstone
+	cp LICENSE.txt $(OUT)/COPYING.txt
+	cp amiga/Licences.txt $(OUT)/Licences.txt
+	cp amiga/icons/BStone.info amiga/icons/ReadMe.info $(OUT)/
+	for f in ReadMe-bstone COPYING.txt Licences.txt; do cp amiga/icons/ReadMe.info $(OUT)/$$f.info; done
+	cp amiga/icons/BStone-drawer.info $(DIST)/BStone.info
+	cp amiga/Install-BStone amiga/Install-BStone.info $(DIST)/
+
+clean:
+	rm -rf $(BUILD)
+
+distclean: clean
+	rm -rf $(DIST)
+
+.PHONY: all dist clean distclean
