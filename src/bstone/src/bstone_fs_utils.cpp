@@ -32,6 +32,14 @@ std::string append_path_separator(const std::string& path)
 {
 	auto result = path;
 
+#ifdef __amigaos__
+	// AmigaDOS: "PROGDIR:" + "/" would be PROGDIR:'s parent drawer.
+	if (!result.empty() && result.back() == ':')
+	{
+		return result;
+	}
+#endif
+
 	if (!result.empty() && result.back() != fs::native_separator)
 	{
 		result += fs::native_separator;
@@ -61,7 +69,11 @@ std::string append_path(const std::string& path, const std::string& sub_path)
 		result.reserve(path.size() + sub_path.size() + 1);
 		result.assign(path);
 
-		if (result.back() != fs::native_separator)
+		if (result.back() != fs::native_separator
+#ifdef __amigaos__
+			&& result.back() != ':' // "VOL:" + "name", not "VOL:/name"
+#endif
+			)
 		{
 			result += fs::native_separator;
 		}
