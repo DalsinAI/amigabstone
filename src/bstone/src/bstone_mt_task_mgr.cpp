@@ -345,6 +345,13 @@ void MtTaskMgrImpl::add_tasks(
 	int mt_task_count)
 {
 	mt_task_queue_.push(mt_tasks, mt_task_count);
+
+#ifdef __amigaos__
+	// No worker thread here: the caller runs what it adds.
+	while (try_pick_and_execute())
+	{
+	}
+#endif
 }
 
 void MtTaskMgrImpl::add_tasks_and_wait_for_added(
@@ -415,6 +422,13 @@ void MtTaskMgrImpl::initialize_concurrency()
 
 void MtTaskMgrImpl::initialize_threads()
 {
+#ifdef __amigaos__
+	// One CPU: a worker thread that polls its queue every millisecond takes
+	// time from the game and has to be joined at the exit. Tasks run in the
+	// thread that adds them (add_tasks).
+	return;
+#endif
+
 	mt_threads_.resize(thread_count_);
 
 	for (auto& mt_thread : mt_threads_)

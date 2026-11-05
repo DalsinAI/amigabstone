@@ -15,6 +15,9 @@ SPDX-License-Identifier: GPL-2.0-or-later
 #include <iterator>
 #include <stdexcept>
 #include <thread>
+#ifdef __amigaos__
+#include <sys/stat.h>
+#endif
 #include "3d_def.h"
 #include "jm_lzh.h"
 #include "jm_tp.h"
@@ -10783,6 +10786,16 @@ const std::string& get_profile_dir()
 		const auto value = g_args.get_option_value("profile_dir");
 		profile_dir.assign(value.cbegin(), value.cend());
 
+#ifdef __amigaos__
+		// Settings, saved games, the log and screenshots in the drawer's
+		// User drawer (made if it is not there).
+		if (profile_dir.empty())
+		{
+			profile_dir = "PROGDIR:User";
+			mkdir("PROGDIR:User", 0755);
+		}
+#endif
+
 		if (profile_dir.empty())
 		{
 			constexpr auto buffer_size = 4096;
@@ -10842,6 +10855,11 @@ const std::string& get_default_data_dir()
 		is_initialized = true;
 
 		result = bstone::fs_utils::get_working_dir();
+
+#ifdef __amigaos__
+		// The game's data beside the program, wherever it is started from.
+		result = "PROGDIR:";
+#endif
 
 #ifdef __vita__
 		result = "ux0:/data/bstone/";

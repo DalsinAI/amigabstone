@@ -1,0 +1,35 @@
+BStone (Blake Stone) for AmigaOS 3.x: licences
+==============================================
+
+The game: Blake Stone: Aliens of Gold (1993) and Planet Strike (1994) by
+JAM Productions, published by Apogee Software, Ltd.; the source release
+by Apogee (2013); BStone by Boris I. Bendovsky and contributors,
+https://github.com/bibendovsky/bstone.
+
+- The program is under the GNU General Public License, version 2 or (at
+  your option) any later version (COPYING.txt): the original and modified
+  original source code. BStone's completely new code is under the MIT
+  licence; LICENSE.txt (COPYING.txt here) holds both texts, as upstream
+  ships them.
+- The libraries built in: Nuked OPL3 (LGPL 2.1 or later), DOSBox's DBOPL
+  (GPL 2 or later), xBRZ (GPL 3), stb (public domain / MIT), the Vulkan
+  headers and loader stubs (Apache 2.0 / MIT); their notices are in the
+  source (src/lib/). With xBRZ linked in, the BStone program as a whole
+  is under GPL 3, as upstream's builds are.
+- The icon art (src/bstone/src/resources/win32/bstone_icon.ico, used for
+  the Workbench icons) comes with the GPL source.
+- The Amiga port's own files (amiga/) are GPL 2 or later, like the program.
+  Copyright (c) 2026 AmiCradle Team.
+
+The game data is NOT included.
+
+- The shareware episode of Aliens of Gold (1bs30.zip, version 3.0:
+  AUDIOHED.BS1, AUDIOT.BS1, IANIM.BS1, MAPHEAD.BS1, MAPTEMP.BS1,
+  SANIM.BS1, VGADICT.BS1, VGAGRAPH.BS1, VGAHEAD.BS1, VSWAP.BS1) is
+  Apogee's. Its VENDOR.DOC lets anyone pass the shareware around free of
+  charge, but only as the whole, unmodified program with all its files
+  (BS_AOG.EXE and the rest) "on IBM compatible media"; an Amiga drawer
+  holding only the data files is not that. So the port does not ship it:
+  get the shareware archive and copy its data files into the drawer.
+- The full games (Aliens of Gold, .BS6; Planet Strike, .VSI) are sold by
+  Apogee (3D Realms), GOG and Steam; bring your own copy.

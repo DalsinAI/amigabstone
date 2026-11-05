@@ -28,7 +28,14 @@ SPDX-License-Identifier: GPL-2.0-or-later
 
 #define TP_CURSOR_SAVES 8 // MAX different points to save
 
+// The two characters of a code, as the 16-bit word read from the text at
+// them is (a native read: low byte first on little-endian CPUs only).
+#include "bstone_endian.h"
+#if BSTONE_ENDIAN == BSTONE_BIG_ENDIAN
+#define TP_CNVT_CODE(c1, c2) (((c1) << 8) | (c2))
+#else
 #define TP_CNVT_CODE(c1, c2) ((c1) | (c2 << 8))
+#endif
 
 #define TP_MAX_ANIMS 10
 #define TP_MAX_PAGES 41

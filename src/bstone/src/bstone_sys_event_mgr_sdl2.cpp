@@ -429,9 +429,28 @@ bool Sdl2EventMgr::handle_event(const SDL_Event& sdl_e, Event& e) noexcept
 {
 	switch (sdl_e.type)
 	{
+#ifdef __amigaos__
+		// The window's close gadget and Right Amiga+Q end the game.
+		case SDL_QUIT:
+			e.common.type = EventType::quit;
+			return true;
+
+		case SDL_KEYDOWN:
+			if (sdl_e.key.keysym.sym == SDLK_q && (sdl_e.key.keysym.mod & KMOD_RGUI) != 0)
+			{
+				e.common.type = EventType::quit;
+				return true;
+			}
+
+			return handle_event(sdl_e.key, e.keyboard);
+
+		case SDL_KEYUP:
+			return handle_event(sdl_e.key, e.keyboard);
+#else
 		case SDL_KEYDOWN:
 		case SDL_KEYUP:
 			return handle_event(sdl_e.key, e.keyboard);
+#endif
 
 		case SDL_MOUSEMOTION:
 			return handle_event(sdl_e.motion, e.mouse_motion);

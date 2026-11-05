@@ -50,6 +50,9 @@ private:
 
 
 		std::uint16_t code;
+#ifdef __amigaos__
+		std::uint16_t padding_; // m68k aligns an int32 to 2, not 4: 12 bytes as elsewhere
+#endif
 		std::int32_t block_num;
 		std::int32_t recsize;
 	}; // AnimFrame
