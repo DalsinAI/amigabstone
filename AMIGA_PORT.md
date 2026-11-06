@@ -107,9 +107,11 @@ Known limits
 ------------
 
 - Speed: the software renderer draws a 640x480 window at 320x200 game
-  pixels with widescreen on; in the lab (on a heavily loaded host) the
-  menus' fades took a few seconds and play was slow. vid_is_widescreen "0"
-  in User/bstone_config.txt gives the 68040 less to draw. The frame rate on
+  pixels; in the lab (on a heavily loaded host) the menus' fades took a
+  few seconds and play was slow. The Amiga build starts in 4:3
+  (vid_is_widescreen "0"), which gives the 68040 less to draw; widescreen
+  can be switched on in the video options or with vid_is_widescreen "1" in
+  User/bstone_config.txt. The frame rate on
   a real 68040 was not measured.
 - No OpenAL: the sound is BStone's own mixer through SDL 2 (AdLib music and
   effects emulated by DBOPL, which costs the CPU; snd_is_music_enabled "0"
