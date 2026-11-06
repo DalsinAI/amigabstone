@@ -172,7 +172,12 @@ auto vid_is_ui_stretched_cvar = bstone::CVar{
 // vid_is_widescreen
 
 constexpr auto vid_is_widescreen_cvar_name = bstone::StringView{"vid_is_widescreen"};
+#ifdef __amigaos__
+// 4:3 by default on the Amiga: a narrower view is less to draw on a 68040 (AMIGA_PORT.md).
+constexpr auto vid_is_widescreen_cvar_default = false;
+#else
 constexpr auto vid_is_widescreen_cvar_default = true;
+#endif
 
 auto vid_is_widescreen_cvar = bstone::CVar{
 	bstone::CVarBoolTag{},

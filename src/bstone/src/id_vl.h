@@ -172,7 +172,11 @@ extern int vga_area;
 extern int vga_3d_view_top_y;
 extern int vga_3d_view_bottom_y;
 
+#ifdef __amigaos__
+const bool default_vid_widescreen = false;
+#else
 const bool default_vid_widescreen = true;
+#endif
 
 // Is VSync enabled?
 extern bool vid_has_vsync;
